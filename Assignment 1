@@ -1,0 +1,74 @@
+# Import necessary modules
+from sklearn.datasets import make_blobs
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import numpy as np
+
+# -------------------------------
+# 1. Generate the Artificial Dataset
+# -------------------------------
+centers = [[2, 4], [6, 6], [1, 9]]  # Define centers for three classes
+sim_data, sim_labels = make_blobs(n_samples=150, 
+                                  centers=np.array(centers),
+                                  random_state=1)
+
+# -------------------------------
+# 2. Split Data into Training and Testing Sets (80-20 split)
+# -------------------------------
+sim_train_data, sim_test_data, sim_train_labels, sim_test_labels = train_test_split(
+    sim_data, sim_labels, train_size=0.8, test_size=0.2, random_state=42)
+
+# -------------------------------
+# 3. Create and Fit the KNN Classifier
+# -------------------------------
+# Initialize KNN classifier with default parameters
+knn = KNeighborsClassifier()
+knn.fit(sim_train_data, sim_train_labels)
+
+# -------------------------------
+# 4. Evaluate the Model on Test Data
+# -------------------------------
+sim_test_predictions = knn.predict(sim_test_data)
+accuracy = accuracy_score(sim_test_labels, sim_test_predictions)
+print("Artificial Dataset - Testing Accuracy (Default KNN):", accuracy)
+
+# -------------------------------
+# 5. Plot Decision Boundaries and Data Points
+# -------------------------------
+# Create a mesh grid for plotting decision boundaries
+h = 0.1  # step size in the mesh
+x_min, x_max = sim_data[:, 0].min() - 1, sim_data[:, 0].max() + 1
+y_min, y_max = sim_data[:, 1].min() - 1, sim_data[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                     np.arange(y_min, y_max, h))
+grid_points = np.c_[xx.ravel(), yy.ravel()]
+
+# Predict the class for each point in the mesh
+grid_predictions = knn.predict(grid_points)
+grid_predictions = grid_predictions.reshape(xx.shape)
+
+# Plotting
+plt.figure(figsize=(14, 6))
+
+# Plot for Training Data
+plt.subplot(1, 2, 1)
+plt.contourf(xx, yy, grid_predictions, alpha=0.3, cmap=plt.cm.Paired)
+plt.scatter(sim_train_data[:, 0], sim_train_data[:, 1], c=sim_train_labels, 
+            s=50, cmap=plt.cm.Paired, edgecolor='k')
+plt.title("Artificial Dataset - Training Data with Decision Boundaries")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+
+# Plot for Testing Data
+plt.subplot(1, 2, 2)
+plt.contourf(xx, yy, grid_predictions, alpha=0.3, cmap=plt.cm.Paired)
+plt.scatter(sim_test_data[:, 0], sim_test_data[:, 1], c=sim_test_labels, 
+            s=50, cmap=plt.cm.Paired, edgecolor='k')
+plt.title("Artificial Dataset - Testing Data with Decision Boundaries")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+
+plt.tight_layout()
+plt.show()
